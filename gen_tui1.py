@@ -1305,11 +1305,8 @@ class TUI:
 
         block = Align.left(Text.assemble(title, "\n", subtitle, "\n", debug_info, "\n", current_step_text))
 
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
-        return Panel(block, border_style=border_style, box=border_box)
+        # Static border for outer panel (don't cycle - hard to focus)
+        return Panel(block, border_style=self.palette["border"], box=box.ROUNDED)
 
     def steps_table(self):
         """General build steps (pre-verification)."""
@@ -1336,11 +1333,8 @@ class TUI:
 
             t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
 
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
-        return Panel(t, title="Steps", border_style=border_style, box=border_box)
+        # Static border for outer panel
+        return Panel(t, title="Steps", border_style=self.palette["border"], box=box.ROUNDED)
 
     def verification_table(self):
         """Verification steps (testbench pipeline)."""
@@ -1366,11 +1360,8 @@ class TUI:
 
             t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
 
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
-        return Panel(t, title="Verification", border_style=border_style, box=border_box)
+        # Static border for outer panel
+        return Panel(t, title="Verification", border_style=self.palette["border"], box=box.ROUNDED)
 
     def agents_panel(self):
         """Agent boxes showing which agent is currently active."""
@@ -1420,10 +1411,10 @@ class TUI:
 
                 box_content = Group(mem_info, progress)
 
-                # Futuristic border style
-                if self.is_futuristic:
-                    border_style = self.get_cycling_color() if mem_percent > 30 else "dim"
-                    border_box = box.DOUBLE if mem_percent > 50 else box.ROUNDED
+                # Futuristic border style - cycling colors for ACTIVE memory only
+                if self.is_futuristic and mem_percent > 30:
+                    border_style = self.get_cycling_color()
+                    border_box = box.HEAVY
                 else:
                     border_style = "cyan" if mem_percent > 50 else "dim"
                     border_box = box.ROUNDED if mem_percent <= 50 else box.HEAVY
@@ -1447,7 +1438,7 @@ class TUI:
                         agent_box = Panel(
                             box_content,
                             border_style=glow_color,
-                            box=box.DOUBLE,
+                            box=box.HEAVY,
                             padding=(0, 1)
                         )
                     else:
@@ -1480,11 +1471,8 @@ class TUI:
             else:
                 grid.add_row(agent_boxes[i], "")
 
-        # Futuristic border for outer panel
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
-        return Panel(grid, title="Active Agents", border_style=border_style, box=border_box)
+        # Static border for outer panel (inner agent boxes animate)
+        return Panel(grid, title="Active Agents", border_style=self.palette["border"], box=box.ROUNDED)
 
     def log_panel(self):
         from rich.padding import Padding
@@ -1529,24 +1517,18 @@ class TUI:
         # Anchor to bottom so newest lines are visible (auto-scroll behavior)
         title = "Verification Log" if verification_active else "Live Log"
 
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
+        # Static border for outer panel
         return Panel(
             Align(content, align="left", vertical="bottom"),
             title=title,
-            border_style=border_style,
-            box=border_box
+            border_style=self.palette["border"],
+            box=box.ROUNDED
         )
 
     def footer_panel(self):
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
+        # Static border for outer panel
         footer_text = Text(self.footer_help, style="dim")
-        return Panel(footer_text, border_style=border_style, box=border_box)
+        return Panel(footer_text, border_style=self.palette["border"], box=box.ROUNDED)
 
     def summary_panel(self):
         if not self.summary_lines: return None
@@ -1554,11 +1536,8 @@ class TUI:
         for line in self.summary_lines:
             txt.append(line + "\n")
 
-        # Futuristic border
-        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
-        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
-
-        return Panel(txt, title="Summary", border_style=border_style, box=border_box)
+        # Static border for outer panel
+        return Panel(txt, title="Summary", border_style=self.palette["border"], box=box.ROUNDED)
 
     # ----- Render & update -----
     def render(self):

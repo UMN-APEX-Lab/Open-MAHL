@@ -68,9 +68,17 @@ LLM_MODEL=openai  # or llama3.3, gemma3, etc.
 ## What Makes It Futuristic?
 
 The default `futuristic` theme features:
-- **Cycling Border Colors**: Magenta → Cyan → Blue → Bright Cyan (changes every 2 frames)
+- **Static Outer Borders**: Clean, non-distracting blue borders for main panels (easy to focus)
+- **Active Element Animations**: Only active agents and elements pulse/cycle colors
 - **Active Agent Glow**: Pulsing between Cyan → Magenta → Yellow (3-frame cycle)
-- **Memory Progress Bar**: Animates with cycling colors when >30% full
-- **Double-Line Borders**: Enhanced visual separation with `box.DOUBLE`
-- **Running Light Effect**: Like Gemini, borders cycle through neon colors continuously
+- **Memory Progress Bar**: Cycles through Magenta → Cyan → Blue when >30% full
+- **Running Status Colors**: "RUNNING" status pulses through neon colors
+- **Heavy Borders for Active**: Active elements use bold borders (box.HEAVY)
+- **Neon Color Palette**: Bright Magenta, Cyan, Blue, Yellow for active elements
 - **Real-time Animation**: 10 refreshes per second for smooth visual effects
+
+### Design Philosophy
+- **Outer panels**: Static borders (blue) - prevents visual distraction
+- **Inner elements**: Animated when active - draws attention to current work
+- **No double-line borders**: Clean, readable interface
+- **Selective animation**: Only meaningful state changes trigger animations
