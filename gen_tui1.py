@@ -140,6 +140,15 @@ STYLE_PRESETS = {
     "genmini": {"primary": "bright_blue", "accent": "cyan", "border": "blue"},
     "claude":  {"primary": "magenta",     "accent": "bright_magenta", "border": "magenta"},
     "openai":  {"primary": "cyan",        "accent": "bright_cyan", "border": "cyan"},
+    "futuristic": {
+        "primary": "bright_magenta",
+        "accent": "bright_cyan",
+        "border": "blue",
+        "glow1": "magenta",
+        "glow2": "cyan",
+        "glow3": "blue",
+        "neon": "bright_yellow"
+    }
 }
 
 # --------------------------
@@ -1168,12 +1177,17 @@ class TUI:
         )
         self._last_update = 0.0
 
+        self.style_name = style_name
         self.palette = STYLE_PRESETS.get(style_name, STYLE_PRESETS["genmini"])
         self.model = model
         self.lib_dir = lib_dir
         self.max_fix_rounds = max_fix_rounds
         self.max_tb_rounds = max_tb_rounds
         self.logs: List[Tuple[str, str]] = []  # (text, style)
+
+        # Animation frame counter for cycling effects (futuristic style)
+        self.animation_frame = 0
+        self.is_futuristic = (style_name == "futuristic")
         # Flat step list kept for compatibility; we'll render as two sections
         self.steps = [
             ("identify", "Identify modules", "pending"),
@@ -1227,25 +1241,75 @@ class TUI:
             Layout(name="verification_panel"),
         )
 
+    # ----- Animation Helpers -----
+    def get_cycling_color(self):
+        """Get cycling border color for futuristic animations"""
+        if not self.is_futuristic:
+            return self.palette["border"]
+
+        # Cycle through neon colors
+        colors = [self.palette["glow1"], self.palette["glow2"], self.palette["glow3"], self.palette["accent"]]
+        idx = (self.animation_frame // 2) % len(colors)  # Change every 2 frames
+        return colors[idx]
+
+    def get_active_glow_color(self):
+        """Get pulsing glow color for active elements"""
+        if not self.is_futuristic:
+            return self.palette["accent"]
+
+        # Pulse between bright cyan and magenta
+        colors = [self.palette["accent"], self.palette["primary"], self.palette["neon"]]
+        idx = (self.animation_frame // 3) % len(colors)  # Slower pulse
+        return colors[idx]
+
     # ----- Panels -----
     def header_panel(self):
-        title = Text(" MAHL — Terminal Coder ", style=self.palette["primary"], justify="left")
-        subtitle = Text(f"Model: {self.model}   Output: {self.lib_dir}", style=self.palette["accent"])
-        
+        if self.is_futuristic:
+            # Futuristic header with gradient-like effect
+            title = Text()
+            title.append(" MAHLT ", style=f"bold {self.get_cycling_color()}")
+            title.append("— ", style="dim")
+            title.append("Terminal Coder ", style=f"bold {self.palette['accent']}")
+
+            subtitle = Text()
+            subtitle.append("Model: ", style="dim")
+            subtitle.append(self.model, style=self.palette["primary"])
+            subtitle.append("   Output: ", style="dim")
+            subtitle.append(str(self.lib_dir), style=self.palette["accent"])
+        else:
+            title = Text(" MAHL — Terminal Coder ", style=self.palette["primary"], justify="left")
+            subtitle = Text(f"Model: {self.model}   Output: {self.lib_dir}", style=self.palette["accent"])
+
         # Debug rounds info
         fix_rounds_text = "no debugging" if self.max_fix_rounds == 0 else f"{self.max_fix_rounds} rounds"
         tb_rounds_text = "no debugging" if self.max_tb_rounds == 0 else f"{self.max_tb_rounds} rounds"
-        debug_info = Text(f"Debug: Design={fix_rounds_text}, TB={tb_rounds_text}", style=self.palette["accent"])
-        
+
+        if self.is_futuristic:
+            debug_info = Text()
+            debug_info.append("Debug: ", style="dim")
+            debug_info.append(f"Design={fix_rounds_text}, TB={tb_rounds_text}", style=self.palette["glow2"])
+        else:
+            debug_info = Text(f"Debug: Design={fix_rounds_text}, TB={tb_rounds_text}", style=self.palette["accent"])
+
         # Current step indicator
         running = next(((k, label) for k, label, status in self.steps if status == "running"), None)
         if running:
-            current_step_text = Text(f"Current: {running[1]}", style=self.palette["accent"])
+            if self.is_futuristic:
+                current_step_text = Text()
+                current_step_text.append("Current: ", style="dim")
+                current_step_text.append(running[1], style=self.get_active_glow_color())
+            else:
+                current_step_text = Text(f"Current: {running[1]}", style=self.palette["accent"])
         else:
             current_step_text = Text("Current: Ready", style=self.palette["accent"])
-        
+
         block = Align.left(Text.assemble(title, "\n", subtitle, "\n", debug_info, "\n", current_step_text))
-        return Panel(block, border_style=self.palette["border"], box=box.ROUNDED)
+
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        return Panel(block, border_style=border_style, box=border_box)
 
     def steps_table(self):
         """General build steps (pre-verification)."""
@@ -1254,12 +1318,29 @@ class TUI:
         t.add_column(justify="right", ratio=1)
         general_keys = {"identify","describe","ast","codegen","compile"}
         for key, label, status in self.steps:
-            if key not in general_keys: 
+            if key not in general_keys:
                 continue
             icon = {"pending":"•","running":"⟲","done":"✔","failed":"✖"}.get(status, "•")
-            status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+
+            # Futuristic status styling
+            if self.is_futuristic:
+                status_colors = {
+                    "pending": "dim",
+                    "running": self.get_active_glow_color(),
+                    "done": self.palette["glow2"],
+                    "failed": "red"
+                }
+                status_style = status_colors[status]
+            else:
+                status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+
             t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
-        return Panel(t, title="Steps", border_style=self.palette["border"], box=box.ROUNDED)
+
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        return Panel(t, title="Steps", border_style=border_style, box=border_box)
 
     def verification_table(self):
         """Verification steps (testbench pipeline)."""
@@ -1270,9 +1351,26 @@ class TUI:
             if not key.startswith("tb") and key != "debug":
                 continue
             icon = {"pending":"•","running":"⟲","done":"✔","failed":"✖"}.get(status, "•")
-            status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+
+            # Futuristic status styling
+            if self.is_futuristic:
+                status_colors = {
+                    "pending": "dim",
+                    "running": self.get_active_glow_color(),
+                    "done": self.palette["glow2"],
+                    "failed": "red"
+                }
+                status_style = status_colors[status]
+            else:
+                status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+
             t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
-        return Panel(t, title="Verification", border_style=self.palette["border"], box=box.ROUNDED)
+
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        return Panel(t, title="Verification", border_style=border_style, box=border_box)
 
     def agents_panel(self):
         """Agent boxes showing which agent is currently active."""
@@ -1295,38 +1393,72 @@ class TUI:
                 tokens_estimate = self.memory_used // 4
                 tokens_capacity = self.memory_capacity // 4
 
-                # Create progress bar
+                # Create progress bar with cycling colors for futuristic style
+                if self.is_futuristic and mem_percent > 30:
+                    bar_style = self.get_cycling_color()
+                else:
+                    bar_style = "cyan" if mem_percent > 50 else "dim"
+
                 progress = Progress(
                     TextColumn("[progress.description]{task.description}"),
-                    BarColumn(bar_width=None),
+                    BarColumn(bar_width=None, complete_style=bar_style),
                     TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
                     expand=True
                 )
                 task_id = progress.add_task("", total=100, completed=mem_percent)
 
-                # Memory info text - show both KB and estimated tokens
-                mem_info = Text(f"🧠 Context: {mem_kb:.1f}KB (~{tokens_estimate:,} tokens)",
-                               style="cyan" if mem_percent > 50 else "dim")
+                # Memory info text with futuristic styling
+                if self.is_futuristic:
+                    mem_info = Text()
+                    mem_info.append("🧠 ", style="bright_white")
+                    mem_info.append("Context: ", style=self.get_cycling_color())
+                    mem_info.append(f"{mem_kb:.1f}KB ", style="bright_white")
+                    mem_info.append(f"(~{tokens_estimate:,} tokens)", style="dim bright_cyan")
+                else:
+                    mem_info = Text(f"🧠 Context: {mem_kb:.1f}KB (~{tokens_estimate:,} tokens)",
+                                   style="cyan" if mem_percent > 50 else "dim")
 
                 box_content = Group(mem_info, progress)
+
+                # Futuristic border style
+                if self.is_futuristic:
+                    border_style = self.get_cycling_color() if mem_percent > 30 else "dim"
+                    border_box = box.DOUBLE if mem_percent > 50 else box.ROUNDED
+                else:
+                    border_style = "cyan" if mem_percent > 50 else "dim"
+                    border_box = box.ROUNDED if mem_percent <= 50 else box.HEAVY
+
                 agent_box = Panel(
                     box_content,
                     title="LLM Memory",
-                    border_style="cyan" if mem_percent > 50 else "dim",
-                    box=box.ROUNDED if mem_percent <= 50 else box.HEAVY,
+                    border_style=border_style,
+                    box=border_box,
                     padding=(0, 1)
                 )
             else:
                 # Regular agent boxes
                 if is_active:
-                    # Highlighted box when active
-                    box_content = Text(f"⚡ {agent}", style=f"bold {self.palette['accent']}")
-                    agent_box = Panel(
-                        box_content,
-                        border_style=self.palette["accent"],
-                        box=box.HEAVY,
-                        padding=(0, 1)
-                    )
+                    # Futuristic pulsing glow when active
+                    if self.is_futuristic:
+                        glow_color = self.get_active_glow_color()
+                        box_content = Text()
+                        box_content.append("⚡ ", style="bright_yellow")
+                        box_content.append(agent, style=f"bold {glow_color}")
+                        agent_box = Panel(
+                            box_content,
+                            border_style=glow_color,
+                            box=box.DOUBLE,
+                            padding=(0, 1)
+                        )
+                    else:
+                        # Standard highlighted box when active
+                        box_content = Text(f"⚡ {agent}", style=f"bold {self.palette['accent']}")
+                        agent_box = Panel(
+                            box_content,
+                            border_style=self.palette["accent"],
+                            box=box.HEAVY,
+                            padding=(0, 1)
+                        )
                 else:
                     # Dimmed box when inactive
                     box_content = Text(f"  {agent}", style="dim")
@@ -1348,7 +1480,11 @@ class TUI:
             else:
                 grid.add_row(agent_boxes[i], "")
 
-        return Panel(grid, title="Active Agents", border_style=self.palette["border"], box=box.ROUNDED)
+        # Futuristic border for outer panel
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        return Panel(grid, title="Active Agents", border_style=border_style, box=border_box)
 
     def log_panel(self):
         from rich.padding import Padding
@@ -1392,22 +1528,37 @@ class TUI:
 
         # Anchor to bottom so newest lines are visible (auto-scroll behavior)
         title = "Verification Log" if verification_active else "Live Log"
+
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
         return Panel(
             Align(content, align="left", vertical="bottom"),
             title=title,
-            border_style=self.palette["border"],
-            box=box.ROUNDED
+            border_style=border_style,
+            box=border_box
         )
-        
+
     def footer_panel(self):
-        return Panel(Text(self.footer_help, style="dim"), border_style=self.palette["border"], box=box.ROUNDED)
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        footer_text = Text(self.footer_help, style="dim")
+        return Panel(footer_text, border_style=border_style, box=border_box)
 
     def summary_panel(self):
         if not self.summary_lines: return None
         txt = Text()
         for line in self.summary_lines:
             txt.append(line + "\n")
-        return Panel(txt, title="Summary", border_style=self.palette["border"], box=box.ROUNDED)
+
+        # Futuristic border
+        border_style = self.get_cycling_color() if self.is_futuristic else self.palette["border"]
+        border_box = box.DOUBLE if self.is_futuristic else box.ROUNDED
+
+        return Panel(txt, title="Summary", border_style=border_style, box=border_box)
 
     # ----- Render & update -----
     def render(self):
@@ -1460,6 +1611,10 @@ class TUI:
             if now - self._last_update < 0.25:
                 return
             self._last_update = now
+
+        # Increment animation frame for cycling effects
+        self.animation_frame = (self.animation_frame + 1) % 100
+
         # Rebuild panels and let Live's refresh_per_second handle the draw
         self.live_display.update(self.render())
     
@@ -1588,9 +1743,9 @@ def run_pipeline(user_prompt: str, model: str, lib: str, max_fix_rounds: int, ma
         return False, {"error": f"Pipeline failed: {e}", "lib_dir": str(lib_dir) if 'lib_dir' in locals() else lib}
 
 def main():
-    parser = argparse.ArgumentParser(description="gen•mini — Terminal Coder (TUI)")
+    parser = argparse.ArgumentParser(description="MAHLT — Terminal Coder (TUI)")
     parser.add_argument("user_prompt", nargs="?", help="Describe the design to generate")
-    parser.add_argument("--style", choices=list(STYLE_PRESETS.keys()), default="genmini")
+    parser.add_argument("--style", choices=list(STYLE_PRESETS.keys()), default="futuristic")
     parser.add_argument("--model", default=os.getenv("LLM_MODEL", "openai"),
                         help="openai (uses $OPENAI_API_KEY) or an Ollama model name (e.g., llama3.3)")
     parser.add_argument("--lib", default="module_lib", help="Output directory for .v files")
