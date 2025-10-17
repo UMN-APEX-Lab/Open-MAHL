@@ -67,18 +67,46 @@ LLM_MODEL=openai  # or llama3.3, gemma3, etc.
 
 ## What Makes It Futuristic?
 
-The default `futuristic` theme features:
-- **Static Outer Borders**: Clean, non-distracting blue borders for main panels (easy to focus)
-- **Active Element Animations**: Only active agents and elements pulse/cycle colors
-- **Active Agent Glow**: Pulsing between Cyan → Magenta → Yellow (3-frame cycle)
-- **Memory Progress Bar**: Cycles through Magenta → Cyan → Blue when >30% full
-- **Running Status Colors**: "RUNNING" status pulses through neon colors
-- **Heavy Borders for Active**: Active elements use bold borders (box.HEAVY)
-- **Neon Color Palette**: Bright Magenta, Cyan, Blue, Yellow for active elements
-- **Real-time Animation**: 10 refreshes per second for smooth visual effects
+The default `futuristic` theme features **Gemini-inspired** flowing rainbow animations:
+
+### Character-by-Character Wave Animation 🌊
+- **Rainbow Wave Effect**: Each character cycles through colors independently
+- **Flowing Motion**: Colors flow left-to-right creating a wave pattern
+- **Color Sequence**: Magenta → Bright Magenta → Cyan → Bright Cyan → Blue → (repeat)
+- **Phase Offset**: Each character position has unique phase, creating gradient
+- **Smooth Flow**: 10 FPS animation creates continuous wave motion
+
+Applied to:
+- `MAHLT` header - constant rainbow wave
+- Active agent names - flowing colors when working
+- `RUNNING` status text - animated wave
+- Current step indicator - shows what's executing
+- Memory context label - waves when >30% full
+
+### Visual Design
+- **Static Outer Borders**: Clean blue borders on main panels (easy to focus)
+- **Animated Inner Text**: Active text flows with rainbow waves
+- **Active Agent Borders**: Cycle through Magenta → Cyan → Blue
+- **Memory Progress Bar**: Animated when context fills up
+- **Heavy Borders for Active**: Bold (box.HEAVY) borders draw attention
+- **10 FPS Refresh**: Smooth, fluid animations
 
 ### Design Philosophy
-- **Outer panels**: Static borders (blue) - prevents visual distraction
-- **Inner elements**: Animated when active - draws attention to current work
+- **Outer panels**: Static borders - prevents visual distraction
+- **Inner text**: Character-by-character waves - like Gemini
+- **Selective animation**: Only active elements animate
 - **No double-line borders**: Clean, readable interface
-- **Selective animation**: Only meaningful state changes trigger animations
+
+### Example Wave Pattern
+```
+Frame 0:  M A H L T
+          🟣🟪🔵🔷💙
+
+Frame 3:  M A H L T  ← wave flows right
+          🟪🔵🔷💙🟣
+
+Frame 6:  M A H L T
+          🔵🔷💙🟣🟪
+```
+
+Each character continuously cycles through the rainbow palette, creating that signature Gemini flowing effect! ✨
