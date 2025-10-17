@@ -1,0 +1,14 @@
+{
+  "riscv_mips_core": {
+    "riscv_decoder": {},
+    "mips_decoder": {},
+    "riscv_alu": {},
+    "mips_alu": {},
+    "register_file": {},
+    "control_unit": {},
+    "memory_interface": {},
+    "pipeline_stage": {},
+    "hazard_detection": {},
+    "forwarding_unit": {}
+  }
+}

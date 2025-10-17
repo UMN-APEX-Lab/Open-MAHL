@@ -1,0 +1,27 @@
+# Environment variables
+.env
+
+# Compiled outputs
+out
+out_tb
+*.vvp
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Log files
+*.log
+tui_log.txt
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.swp
+*~
