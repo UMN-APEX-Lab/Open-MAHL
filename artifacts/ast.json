@@ -1,5 +1,5 @@
 {
-  "adder_64bit_core": {
+  "adder_core": {
     "full_adder": {}
   }
 }

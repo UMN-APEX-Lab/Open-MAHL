@@ -6,8 +6,10 @@ module full_adder (
     output wire cout
 );
 
-    // Logic for sum and carry-out
-    assign sum  = a ^ b ^ cin;          // XOR operation for sum
-    assign cout = (a & b) | (b & cin) | (a & cin);  // Carry-out computation
+    // Compute the sum using XOR operation
+    assign sum = a ^ b ^ cin;
+
+    // Compute the carry-out using majority logic
+    assign cout = (a & b) | (b & cin) | (a & cin);
 
 endmodule

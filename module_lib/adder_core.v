@@ -1,29 +1,28 @@
-module adder_64bit_core (
-    input  [63:0] A,
-    input  [63:0] B,
-    output [63:0] Sum
+module adder_core (
+    input  [63:0] a,
+    input  [63:0] b,
+    output [63:0] sum
 );
-
     wire [63:0] carry;
 
-    // Connect the first full_adder with cin=0
+    // Instantiate the first full_adder with cin as 0
     full_adder fa0 (
-        .a(A[0]),
-        .b(B[0]),
+        .a(a[0]),
+        .b(b[0]),
         .cin(1'b0),
-        .sum(Sum[0]),
+        .sum(sum[0]),
         .cout(carry[0])
     );
 
-    // Generate full_adder instances for bits 1 to 63
+    // Generate the remaining full_adder instances
     genvar i;
     generate
         for (i = 1; i < 64; i = i + 1) begin : adder_loop
             full_adder fa (
-                .a(A[i]),
-                .b(B[i]),
+                .a(a[i]),
+                .b(b[i]),
                 .cin(carry[i-1]),
-                .sum(Sum[i]),
+                .sum(sum[i]),
                 .cout(carry[i])
             );
         end

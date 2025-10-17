@@ -1262,14 +1262,46 @@ class TUI:
         idx = (self.animation_frame // 3) % len(colors)  # Slower pulse
         return colors[idx]
 
+    def get_char_color(self, char_index):
+        """Get color for character at specific position (creates wave effect)"""
+        if not self.is_futuristic:
+            return self.palette["accent"]
+
+        # Create rainbow wave effect across characters
+        colors = [
+            self.palette["glow1"],      # magenta
+            self.palette["primary"],    # bright_magenta
+            self.palette["glow2"],      # cyan
+            self.palette["accent"],     # bright_cyan
+            self.palette["glow3"],      # blue
+            self.palette["accent"],     # bright_cyan (loop back)
+        ]
+
+        # Each character has phase offset, animation frame creates wave motion
+        phase = (self.animation_frame + char_index) % (len(colors) * 3)
+        color_idx = (phase // 3) % len(colors)
+        return colors[color_idx]
+
+    def colorize_text_wave(self, text_str, base_style=""):
+        """Apply wave color effect to text character by character"""
+        if not self.is_futuristic:
+            return Text(text_str, style=base_style)
+
+        result = Text()
+        for i, char in enumerate(text_str):
+            color = self.get_char_color(i)
+            result.append(char, style=f"bold {color}")
+        return result
+
     # ----- Panels -----
     def header_panel(self):
         if self.is_futuristic:
-            # Futuristic header with gradient-like effect
+            # Futuristic header with character-by-character rainbow wave
             title = Text()
-            title.append(" MAHLT ", style=f"bold {self.get_cycling_color()}")
-            title.append("— ", style="dim")
-            title.append("Terminal Coder ", style=f"bold {self.palette['accent']}")
+            title.append(" ", style="")
+            title.append_text(self.colorize_text_wave("MAHLT"))
+            title.append(" — ", style="dim")
+            title.append("Terminal Coder ", style=f"{self.palette['accent']}")
 
             subtitle = Text()
             subtitle.append("Model: ", style="dim")
@@ -1297,7 +1329,7 @@ class TUI:
             if self.is_futuristic:
                 current_step_text = Text()
                 current_step_text.append("Current: ", style="dim")
-                current_step_text.append(running[1], style=self.get_active_glow_color())
+                current_step_text.append_text(self.colorize_text_wave(running[1]))
             else:
                 current_step_text = Text(f"Current: {running[1]}", style=self.palette["accent"])
         else:
@@ -1319,19 +1351,21 @@ class TUI:
                 continue
             icon = {"pending":"•","running":"⟲","done":"✔","failed":"✖"}.get(status, "•")
 
-            # Futuristic status styling
-            if self.is_futuristic:
+            # Futuristic status styling with wave effect for RUNNING
+            if self.is_futuristic and status == "running":
+                status_text = self.colorize_text_wave(status.upper())
+            elif self.is_futuristic:
                 status_colors = {
                     "pending": "dim",
-                    "running": self.get_active_glow_color(),
                     "done": self.palette["glow2"],
                     "failed": "red"
                 }
-                status_style = status_colors[status]
+                status_text = Text(status.upper(), style=status_colors.get(status, "dim"))
             else:
                 status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+                status_text = Text(status.upper(), style=status_style)
 
-            t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
+            t.add_row(f"{icon} {label}", status_text)
 
         # Static border for outer panel
         return Panel(t, title="Steps", border_style=self.palette["border"], box=box.ROUNDED)
@@ -1346,19 +1380,21 @@ class TUI:
                 continue
             icon = {"pending":"•","running":"⟲","done":"✔","failed":"✖"}.get(status, "•")
 
-            # Futuristic status styling
-            if self.is_futuristic:
+            # Futuristic status styling with wave effect for RUNNING
+            if self.is_futuristic and status == "running":
+                status_text = self.colorize_text_wave(status.upper())
+            elif self.is_futuristic:
                 status_colors = {
                     "pending": "dim",
-                    "running": self.get_active_glow_color(),
                     "done": self.palette["glow2"],
                     "failed": "red"
                 }
-                status_style = status_colors[status]
+                status_text = Text(status.upper(), style=status_colors.get(status, "dim"))
             else:
                 status_style = {"pending":"dim","running":self.palette["accent"],"done":"green","failed":"red"}[status]
+                status_text = Text(status.upper(), style=status_style)
 
-            t.add_row(f"{icon} {label}", Text(status.upper(), style=status_style))
+            t.add_row(f"{icon} {label}", status_text)
 
         # Static border for outer panel
         return Panel(t, title="Verification", border_style=self.palette["border"], box=box.ROUNDED)
@@ -1399,12 +1435,19 @@ class TUI:
                 task_id = progress.add_task("", total=100, completed=mem_percent)
 
                 # Memory info text with futuristic styling
-                if self.is_futuristic:
+                if self.is_futuristic and mem_percent > 30:
+                    # Active memory - use wave effect
                     mem_info = Text()
                     mem_info.append("🧠 ", style="bright_white")
-                    mem_info.append("Context: ", style=self.get_cycling_color())
-                    mem_info.append(f"{mem_kb:.1f}KB ", style="bright_white")
-                    mem_info.append(f"(~{tokens_estimate:,} tokens)", style="dim bright_cyan")
+                    mem_info.append_text(self.colorize_text_wave(f"Context: {mem_kb:.1f}KB"))
+                    mem_info.append(f" (~{tokens_estimate:,} tokens)", style="dim bright_cyan")
+                elif self.is_futuristic:
+                    # Low memory - static
+                    mem_info = Text()
+                    mem_info.append("🧠 ", style="dim")
+                    mem_info.append("Context: ", style="dim")
+                    mem_info.append(f"{mem_kb:.1f}KB ", style="dim")
+                    mem_info.append(f"(~{tokens_estimate:,} tokens)", style="dim")
                 else:
                     mem_info = Text(f"🧠 Context: {mem_kb:.1f}KB (~{tokens_estimate:,} tokens)",
                                    style="cyan" if mem_percent > 50 else "dim")
@@ -1429,15 +1472,16 @@ class TUI:
             else:
                 # Regular agent boxes
                 if is_active:
-                    # Futuristic pulsing glow when active
+                    # Futuristic character-by-character wave when active
                     if self.is_futuristic:
-                        glow_color = self.get_active_glow_color()
                         box_content = Text()
                         box_content.append("⚡ ", style="bright_yellow")
-                        box_content.append(agent, style=f"bold {glow_color}")
+                        box_content.append_text(self.colorize_text_wave(agent))
+                        # Border cycles through colors
+                        border_color = self.get_cycling_color()
                         agent_box = Panel(
                             box_content,
-                            border_style=glow_color,
+                            border_style=border_color,
                             box=box.HEAVY,
                             padding=(0, 1)
                         )
