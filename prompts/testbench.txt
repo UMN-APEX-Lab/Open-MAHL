@@ -1,0 +1,31 @@
+Write a comprehensive self-checking Verilog testbench for the top module "{{top_module}}".
+
+Requirements:
+1. Study the actual module interface from the code below — match exact port names/widths.
+2. Include `timescale 1ns/1ps`.
+3. Instantiate the DUT with correct port connections.
+4. Drive stimulus for ALL input ports.
+5. If there is a clock, generate it (e.g. always #5 clk = ~clk).
+6. If there is a reset, assert it at the start.
+7. Add comprehensive test cases that verify the design's functionality.
+8. Print EXACTLY one of these markers at the end:
+   - "TEST PASSED" if all checks pass
+   - "TEST FAILED: <specific reason>" if any check fails
+9. Use $display to show progress.
+10. End with $finish after all tests.
+11. Compile under Icarus Verilog (iverilog -g2012, vvp).
+
+--- ACTUAL TOP MODULE CODE ---
+```verilog
+{{top_module_code}}
+```
+
+--- MODULE DESCRIPTIONS (context) ---
+{{module_descriptions}}
+
+Notes:
+- Use behavioral code in the testbench (not structural).
+- No placeholder comments — generate complete, working test cases.
+- Verify expected outputs against actual outputs.
+
+Return ONLY the testbench code in a fenced block.

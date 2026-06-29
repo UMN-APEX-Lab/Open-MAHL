@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If you use MAHL-Lite in your research, please cite the MAHL paper it is based on.
+title: "MAHL-Lite: a lightweight open-source distillation of the MAHL RTL pipeline"
+authors:
+  - family-names: Tang
+    given-names: Jinwei
+type: software
+license: PolyForm-Noncommercial-1.0.0
+repository-code: "https://github.com/"  # TODO: set repository URL
+preferred-citation:
+  type: article
+  title: >-
+    MAHL: Multi-Agent LLM-Guided Hierarchical Chiplet Design with Adaptive
+    Debugging
+  authors:
+    - family-names: Tang
+      given-names: Jinwei
+  year: 2025
+  url: "https://arxiv.org/abs/2508.14053"
+  identifiers:
+    - type: other
+      value: "arXiv:2508.14053"
+      description: arXiv preprint

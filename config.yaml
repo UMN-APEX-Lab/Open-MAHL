@@ -1,0 +1,47 @@
+# MAHL-Lite configuration.
+#
+# Every value here is optional — delete a key and its built-in default is used.
+# Precedence: defaults < this file < environment variables < command-line flags.
+
+models:
+  default: openai        # "openai" (uses $OPENAI_API_KEY) or an Ollama model, e.g. "llama3.3"
+  # Per-role overrides. null = inherit `default`. Roles let you, for example,
+  # use a strong model to *reason* about a bug and a cheap one to *write* the fix.
+  planner: null          # picks modules, writes descriptions, generates RTL
+  reasoner: null         # diagnoses failures and writes the fix plan ("thinking")
+  coder: null            # turns the fix plan into patched files
+  verifier: null         # testbenches + Python golden model
+
+sampling:
+  openai_model_id: gpt-4o
+  temperature: 0.6
+  top_p: 1.0
+  max_tokens: 4096
+  retries: 2             # extra attempts when an LLM call fails
+
+rounds:
+  max_fix_rounds: 10     # design compile/fix attempts (0 = no debugging)
+  max_tb_rounds: 10      # testbench iterate attempts (0 = no debugging)
+
+debug:
+  two_phase: true        # true: Reasoner -> Coder. false: single-call patcher.
+
+verify:
+  crossvalidation: true  # cross-check the DUT against an independent Python golden model
+  num_random_vectors: 64
+  seed: 0
+  honest_results: true   # report real PASS / FAIL / INCONCLUSIVE (set false for "never red" demos)
+
+sim:
+  iverilog_flags: ["-g2012"]
+
+memory:
+  capacity_chars: 400000 # context-window estimate shown in the TUI gauge
+
+ui:
+  style: futuristic      # futuristic | claude | openai | genmini
+  no_tui: false          # true = plain logs, no Rich UI
+
+output:
+  lib_dir: module_lib
+  artifacts_dir: artifacts

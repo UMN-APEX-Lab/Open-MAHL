@@ -1,112 +1,176 @@
-# MAHLT - Multi-Agent Hardware Language Toolkit
+# MAHL-Lite
 
-A futuristic terminal-based RTL (Register Transfer Level) generation and verification tool powered by LLMs, featuring an animated TUI with Gemini-inspired visual effects.
+**A lightweight, open-source distillation of the [MAHL](https://arxiv.org/abs/2508.14053) RTL pipeline.**
 
-## Features
+MAHL-Lite turns a natural-language hardware request into synthesizable Verilog and
+*verifies it* — with a small team of LLM "agents" and a futuristic terminal UI. It
+is built for reading, hacking, and research: every prompt is an editable file and
+every knob lives in one `config.yaml`.
 
-🎨 **Futuristic UI Theme** (Default)
-- Cycling rainbow borders with running light effects
-- Pulsing glow animations for active agents
-- Neon color palette (Magenta, Cyan, Blue, Yellow)
-- Double-line borders for enhanced visual appeal
+```bash
+python -m mahl_lite "Build a 4:1 mux from two 2:1 muxes"
+```
 
-🤖 **Multi-Agent System**
-- **Code Planning Agent**: Module identification, description generation, AST building, code generation
-- **Verification Agent**: Testbench generation and validation
-- **Debugging Agent**: Comprehensive error analysis and fixing
-- **LLM Memory**: Real-time context window tracking with progress bar
+---
 
-⚡ **Smart Pipeline**
-- Automated RTL generation from natural language
-- Intelligent module dependency resolution
-- Iterative compile-fix-verify workflow
-- Auto-scrolling live logs (shows last 25 messages)
+## What it does
 
-🔍 **Enhanced Debugging**
-- Limited compile attempts to prevent infinite loops
-- Comprehensive error categorization
-- Full context inclusion for better fixes
-- Visual feedback with step-by-step progress
+```
+        Planner                Reasoner ─► Coder            Verifier
+   describe ▸ AST ▸ codegen   diagnose ▸ patch (on error)   testbench + golden model
+        │                          │                              │
+        ▼                          ▼                              ▼
+   module_lib/*.v  ──►  iverilog compile ──►  cross-validated PASS / FAIL / INCONCLUSIVE
+```
+
+1. **Planner** — lists the modules, writes hierarchical descriptions, builds an AST,
+   and generates one `.v` file per module.
+2. **Adaptive debugging (Reasoner → Coder)** — when a compile or simulation step
+   fails, a *Reasoner* first diagnoses the root cause and writes a fix plan (you see
+   it think 🧠), then a *Coder* applies that plan. This two-step split mirrors MAHL's
+   adaptive debugging and beats a single diagnose-and-patch call.
+3. **Verifier** — generates a self-checking testbench **and** an independent Python
+   golden model, then cross-validates (below).
+
+### Cross-validation: defeating testbench hallucination
+
+An LLM-written testbench can confidently "verify" that 1 + 1 = 3. So MAHL-Lite moves
+the verdict **out of the LLM-written Verilog and into deterministic Python**:
+
+1. extract the DUT's real ports (names / widths) — regex, double-checked by
+   [pyverilog](https://github.com/PyHDI/Pyverilog) when installed;
+2. ask the LLM for a **Python** reference model of the spec;
+3. generate shared test vectors (directed edge cases + seeded random);
+4. run them through the Python model → **golden** outputs;
+5. drive the DUT with a *templated, non-LLM* harness that only prints raw outputs;
+6. **compare in Python** — that comparison is the authoritative verdict.
+
+If the self-checking testbench disagrees with the golden model, it is flagged as a
+**TESTBENCH HALLUCINATION** and the golden model wins. Results are honest:
+
+| Verdict | Meaning | Exit code |
+|---|---|---|
+| `PASS ✅` | DUT matches the golden model / testbench | 0 |
+| `FAIL ❌` | mismatch found (carries the reason) | 2 |
+| `INCONCLUSIVE ⚠` | could not decide (no marker, didn't run, etc.) | 3 |
+
+> **v1 scope:** cross-validation covers **combinational** modules. Sequential /
+> clocked designs are detected and routed to the self-checking testbench path
+> (still with honest pass/fail). Cycle-accurate cross-validation is on the roadmap.
+
+---
+
+## Relationship to the MAHL paper
+
+MAHL-Lite keeps MAHL's **hierarchical description**, **hierarchical code
+generation**, **flow-based validation**, and **adaptive debugging**. It intentionally
+**leaves out** MAHL's retrieval-augmented generation, multi-granularity design-space
+exploration, and PPA optimization. If you use this in research, please
+[cite the paper](#citation).
+
+---
+
+## Install
+
+```bash
+pip install -r requirements.txt          # rich, openai, python-dotenv, pyyaml
+# optional: pip install ollama pyverilog  # local models / robust port checks
+```
+
+You also need **Icarus Verilog** on your PATH:
+
+```bash
+sudo apt install iverilog        # Debian/Ubuntu
+brew install icarus-verilog      # macOS
+```
+
+Create a `.env` (see `.env.example`) for the OpenAI backend:
+
+```
+OPENAI_API_KEY=sk-...
+```
+
+---
 
 ## Usage
 
 ```bash
-# Use default futuristic theme
-python gen_tui1.py "Build a 4:1 mux using two 2:1 muxes"
+python -m mahl_lite "Create a RISC-V ALU with add/sub/and/or"
 
-# Try other themes
-python gen_tui1.py --style claude "Create a RISC-V ALU"
-python gen_tui1.py --style openai "Design a simple CPU"
-python gen_tui1.py --style genmini "Make a memory controller"
-
-# Specify model and rounds
-python gen_tui1.py --model openai --max-fix-rounds 10 --max-tb-rounds 10 "Your design"
+python -m mahl_lite --style claude --model openai "Design a 2:1 mux"
+python -m mahl_lite --no-tui --max-fix-rounds 5 "..."     # plain logs, CI-friendly
+python -m mahl_lite --no-crossval "..."                   # testbench only
+python -m mahl_lite --lenient "..."                       # demo mode: always PASS
 ```
 
-## Available Themes
+Local models via Ollama: `--model llama3.3` (run the daemon, pull the model first).
 
-- `futuristic` (default) - Animated borders with cycling neon colors
-- `claude` - Magenta accent with clean design
-- `openai` - Cyan accent with modern look
-- `genmini` - Blue accent with traditional style
+---
 
-## Requirements
+## Configuration (the point of "Lite")
 
-```bash
-pip install rich openai python-dotenv
-# For local models: pip install ollama
+Two places, no code required:
+
+- **`config.yaml`** — models (and per-role model overrides), sampling, debug rounds,
+  the `two_phase` debug toggle, cross-validation settings, UI theme, output dirs.
+  Precedence: defaults < `config.yaml` < environment < CLI flags.
+- **`prompts/*.txt`** — every prompt the agents use. Edit them freely; placeholders
+  look like `{{name}}`.
+
+Per-role models let you, for example, reason about bugs with a strong model and
+write the patch with a cheaper one:
+
+```yaml
+models:
+  default: openai
+  reasoner: openai        # strong
+  coder: llama3.3         # cheap/fast
 ```
 
-## Environment Setup
+Themes: `futuristic` (default), `claude`, `openai`, `genmini`.
 
-Create a `.env` file:
+---
+
+## Project layout
+
 ```
-OPENAI_API_KEY=your_api_key_here
-LLM_MODEL=openai  # or llama3.3, gemma3, etc.
-```
-
-## What Makes It Futuristic?
-
-The default `futuristic` theme features **Gemini-inspired** flowing rainbow animations:
-
-### Character-by-Character Wave Animation 🌊
-- **Rainbow Wave Effect**: Each character cycles through colors independently
-- **Flowing Motion**: Colors flow left-to-right creating a wave pattern
-- **Color Sequence**: Magenta → Bright Magenta → Cyan → Bright Cyan → Blue → (repeat)
-- **Phase Offset**: Each character position has unique phase, creating gradient
-- **Smooth Flow**: 10 FPS animation creates continuous wave motion
-
-Applied to:
-- `MAHLT` header - constant rainbow wave
-- Active agent names - flowing colors when working
-- `RUNNING` status text - animated wave
-- Current step indicator - shows what's executing
-- Memory context label - waves when >30% full
-
-### Visual Design
-- **Static Outer Borders**: Clean blue borders on main panels (easy to focus)
-- **Animated Inner Text**: Active text flows with rainbow waves
-- **Active Agent Borders**: Cycle through Magenta → Cyan → Blue
-- **Memory Progress Bar**: Animated when context fills up
-- **Heavy Borders for Active**: Bold (box.HEAVY) borders draw attention
-- **10 FPS Refresh**: Smooth, fluid animations
-
-### Design Philosophy
-- **Outer panels**: Static borders - prevents visual distraction
-- **Inner text**: Character-by-character waves - like Gemini
-- **Selective animation**: Only active elements animate
-- **No double-line borders**: Clean, readable interface
-
-### Example Wave Pattern
-```
-Frame 0:  M A H L T
-          🟣🟪🔵🔷💙
-
-Frame 3:  M A H L T  ← wave flows right
-          🟪🔵🔷💙🟣
-
-Frame 6:  M A H L T
-          🔵🔷💙🟣🟪
+mahl_lite/
+  __main__.py   config.py  llm.py  prompts.py  parsing.py  errors.py  log.py
+  pipeline.py            # Planner + orchestration
+  debug.py              # Reasoner -> Coder
+  verify/  sim.py  interface.py  testbench.py  crossval.py  analyze.py
+  tui/     app.py  theme.py
+prompts/        # editable prompt templates
+config.yaml     # editable settings
+REFACTOR_PLAN.md  # design notes / roadmap
 ```
 
-Each character continuously cycles through the rainbow palette, creating that signature Gemini flowing effect! ✨
+---
+
+## Caveats
+
+- Cross-validation runs **LLM-generated Python** in a timed subprocess. It is
+  isolated and time-bounded but **not a security sandbox** — review models or set
+  `verify.crossvalidation: false` if you don't trust the output.
+- Sequential cross-validation is experimental (see scope note above).
+
+---
+
+## Citation
+
+```bibtex
+@article{mahl2025,
+  title  = {MAHL: Multi-Agent LLM-Guided Hierarchical Chiplet Design with Adaptive Debugging},
+  author = {Tang, Jinwei},
+  year   = {2025},
+  eprint = {2508.14053},
+  archivePrefix = {arXiv}
+}
+```
+
+## License
+
+[PolyForm Noncommercial License 1.0.0](LICENSE) — free to use, modify, and
+distribute for any **noncommercial** purpose (research, education, personal). This is
+source-available, not an OSI "open source" license, because it restricts use to
+noncommercial purposes.

@@ -1,0 +1,24 @@
+Write a PURE PYTHON reference model for the Verilog module "{{top_module}}".
+
+This reference model is the GROUND TRUTH used to check the hardware. Implement the
+intended SPEC independently — do NOT assume the Verilog below is correct; derive the
+behavior from the description, and use the code only to read exact port names/widths.
+
+=== VERILOG INTERFACE (port names/widths) ===
+```verilog
+{{top_module_code}}
+```
+
+=== SPEC (module descriptions) ===
+{{module_descriptions}}
+
+=== REQUIREMENTS ===
+- Define exactly one function:  def ref(inputs: dict) -> dict
+- `inputs` keys are the DUT INPUT port names; values are non-negative Python ints,
+  already masked to each port's bit width.
+- Return a dict whose keys are the DUT OUTPUT port names and whose values are ints.
+- Mask each output to its port width, e.g.  y = result & ((1 << WIDTH) - 1).
+- Pure and deterministic: standard library only; no I/O, no prints, no randomness.
+- Assume a COMBINATIONAL module: outputs depend only on the current inputs.
+
+Return ONLY the Python code in a fenced ```python block.

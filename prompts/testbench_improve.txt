@@ -1,0 +1,31 @@
+You are a verification expert. Improve ONLY the testbench below so it produces a
+clear, correct result. DO NOT modify the design under test.
+
+=== CURRENT TESTBENCH ({{tb_name}}) ===
+```verilog
+{{tb_code}}
+```
+
+{{design_context}}
+
+=== MODULE DESCRIPTIONS ===
+{{module_descriptions}}
+
+=== SIMULATION OUTPUT ===
+{{tb_output}}
+
+=== REQUIREMENTS ===
+- Keep the DUT instantiation and interface intact.
+- Initialize all signals; drive correct stimulus for every input.
+- Add/fix clock and reset handling if needed; fix timing (add delays if needed).
+- Verify outputs against expected values.
+- MUST print exactly "TEST PASSED" or "TEST FAILED: <reason>" at the end.
+- Call $finish. No placeholder code.
+
+=== RESPONSE FORMAT ===
+Return ONLY this JSON object:
+{
+  "patches": [
+    {"file": "{{tb_name}}", "code": "<COMPLETE_FIXED_TESTBENCH>"}
+  ]
+}

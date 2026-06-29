@@ -1,0 +1,9 @@
+Analyze these modules and produce an AST tree, in JSON, representing their
+instantiation hierarchy. The tree must have exactly one root (the top module).
+
+Module descriptions:
+{{module_descriptions}}
+
+Return only the JSON hierarchy — nothing else.
+Example (for ['mux4_1', 'mux2_1']):
+{"mux4_1": {"mux2_1": {}}}

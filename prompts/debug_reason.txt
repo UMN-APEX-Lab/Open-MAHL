@@ -1,0 +1,21 @@
+You are an expert Verilog/SystemVerilog debugger. A compile or simulation step just
+failed. Your job in THIS step is to THINK, not to write code.
+
+=== ERROR ===
+{{error_text}}
+
+{{hints}}
+
+=== FILES ===
+{{files_context}}
+
+{{focus_instruction}}
+
+=== YOUR TASK ===
+1. Identify the single ROOT CAUSE (and note any secondary issues).
+2. Explain briefly WHY it happens.
+3. Give a concrete, step-by-step fix plan that names exact files, modules, ports,
+   signals, and (where possible) line locations to change.
+
+Be concise and specific — another engineer will implement your plan verbatim.
+Output prose only. Do NOT include any code blocks or rewritten files.

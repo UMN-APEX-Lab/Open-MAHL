@@ -1,0 +1,11 @@
+Generate synthesizable Verilog for the module description below.
+
+Rules:
+- Do NOT define any dependency/submodule here — only the named module itself.
+- Do NOT emit placeholder or TODO code; the module must be complete.
+- Target SystemVerilog-2012 (iverilog -g2012) compatibility.
+
+Module name: {{module_name}}
+Description: {{module_description}}
+
+Format your response using markdown with ``` for the code block.

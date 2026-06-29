@@ -1,0 +1,12 @@
+Given the following user request, identify all required modules. When generating a
+complicated design, there should be a single top module whose name ends in `_core`.
+
+User request: {{user_prompt}}
+
+Decide:
+1. The required modules at the Verilog level, by name only. For example, a mux4_1 is
+   built from mux4_1 and mux2_1, so the answer would be exactly: ['mux4_1', 'mux2_1']
+2. (Think internally about how they connect — do not output this.)
+
+Your response must contain ONLY the list of module names as a Python list literal.
+It is parsed with ast.literal_eval, so output nothing else — no prose, no code fences.

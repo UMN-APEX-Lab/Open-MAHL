@@ -6,6 +6,14 @@ out
 out_tb
 *.vvp
 
+# Generated artifacts (keep the directory, not its contents)
+artifacts/*.json
+!artifacts/.gitkeep
+
+# pyverilog / PLY parser tables (dumped into cwd)
+parser.out
+parsetab.py
+
 # Python cache
 __pycache__/
 *.pyc
@@ -17,9 +25,13 @@ __pycache__/
 *.log
 tui_log.txt
 
-# IDE
+# IDE / local tooling
 .vscode/
 .idea/
+.claude/
+
+# Generated RTL output (the pipeline writes here at runtime)
+module_lib/
 
 # Temporary files
 *.tmp

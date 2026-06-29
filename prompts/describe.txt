@@ -1,0 +1,16 @@
+Using the template and rules below, write a detailed description for each module.
+Think carefully about how the modules connect. Separate the module descriptions with
+a blank line (module1, blank line, module2, ...). The number of descriptions must
+match the [Modules to describe] list. When the design is complicated, include a single
+top module whose name ends in `_core`. Use markdown.
+
+Project definition and requirements:
+{{project_definition}}
+
+Template and rules:
+{{template}}
+
+Modules to describe:
+{{modules_list}}
+
+Format your response using markdown with ``` for code blocks.

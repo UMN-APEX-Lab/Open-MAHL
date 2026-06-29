@@ -1,0 +1,25 @@
+You are an expert Verilog/SystemVerilog engineer. Apply the fix plan below and return
+the corrected files.
+
+=== FIX PLAN (from the reasoning step) ===
+{{fix_plan}}
+
+=== FILES ===
+{{files_context}}
+
+{{focus_instruction}}
+
+=== REQUIREMENTS ===
+- Implement the plan exactly. Fix ALL identified issues — no placeholders or TODOs.
+- Keep SystemVerilog-2012 (iverilog -g2012) compatibility.
+- Ensure module instantiations match their definitions and all signals are declared.
+- Return the FULL corrected content of every file you change (not diffs).
+- Use exact filenames from this list: {{file_list}}
+
+=== RESPONSE FORMAT ===
+Return ONLY this JSON object (no commentary outside it):
+{
+  "patches": [
+    {"file": "<EXACT_FILENAME>", "code": "<COMPLETE_CORRECTED_FILE_CONTENT>"}
+  ]
+}
