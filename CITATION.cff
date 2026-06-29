@@ -27,6 +27,8 @@ authors:
   - family-names: Ding
     given-names: Caiwen
     affiliation: University of Minnesota - Twin Cities
+# TODO: add the tool-use paper that this tool implements as a second reference
+#       under `references:` (title, authors, venue, year, doi/url) once available.
 preferred-citation:
   type: conference-paper
   title: >-

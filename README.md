@@ -13,6 +13,27 @@ python -m mahl_lite "Build a 4:1 mux from two 2:1 muxes"
 
 ---
 
+## Built on MAHL
+
+MAHL-Lite is the open-source tool from _**TODO — tool-use paper**_ — a demonstration
+that the MAHL pipeline ([ICCAD 2025](https://ieeexplore.ieee.org/document/11240973))
+is easy to **use** and **build on**. Everything you'd want to change is a file, not
+framework internals:
+
+- **Add or swap an agent** — give a role its own model in `config.yaml` and its own
+  prompt in `prompts/`.
+- **Reshape any step** — every prompt (`projection`, `describe`, `codegen`,
+  `debug_reason`, `debug_code`, `ref_model`, `testbench`, …) is an editable `.txt`.
+- **Tune behavior** — models, temperatures, debug rounds, the Reasoner→Coder split,
+  and cross-validation are all knobs in `config.yaml` (no code edits).
+- **Plug in verification** — add a backend alongside `verify/crossval.py` and
+  `verify/testbench.py`.
+
+> 📄 **Tool-use paper:** _TODO — add title, authors, venue, and link._ If you build
+> on MAHL-Lite, please cite both that paper and the [MAHL paper](#citation).
+
+---
+
 ## What it does
 
 ```
@@ -157,6 +178,13 @@ REFACTOR_PLAN.md  # design notes / roadmap
 ---
 
 ## Citation
+
+If you use MAHL-Lite, please cite **both** the tool-use paper it implements and the
+underlying MAHL paper.
+
+**Tool-use paper** (this tool): _TODO — add title, authors, venue, and link._
+
+**MAHL** (foundation):
 
 ```bibtex
 @inproceedings{tang2025mahl,
