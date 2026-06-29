@@ -1,6 +1,6 @@
 # MAHL-Lite
 
-**A lightweight, open-source distillation of the [MAHL](https://arxiv.org/abs/2508.14053) RTL pipeline.**
+**A lightweight, open-source distillation of the [MAHL](https://ieeexplore.ieee.org/document/11240973) RTL pipeline (ICCAD 2025).**
 
 MAHL-Lite turns a natural-language hardware request into synthesizable Verilog and
 *verifies it* — with a small team of LLM "agents" and a futuristic terminal UI. It
@@ -159,12 +159,13 @@ REFACTOR_PLAN.md  # design notes / roadmap
 ## Citation
 
 ```bibtex
-@article{mahl2025,
-  title  = {MAHL: Multi-Agent LLM-Guided Hierarchical Chiplet Design with Adaptive Debugging},
-  author = {Tang, Jinwei},
-  year   = {2025},
-  eprint = {2508.14053},
-  archivePrefix = {arXiv}
+@inproceedings{tang2025mahl,
+  title     = {MAHL: Multi-Agent LLM-Guided Hierarchical Chiplet Design with Adaptive Debugging},
+  author    = {Tang, Jinwei and Qin, Jiayin and Xu, Nuo and Nalla, Pragnya Sudershan and Cao, Yu and Zhao, Yang Katie and Ding, Caiwen},
+  booktitle = {2025 IEEE/ACM International Conference on Computer-Aided Design (ICCAD)},
+  year      = {2025},
+  doi       = {10.1109/ICCAD66269.2025.11240973},
+  url       = {https://ieeexplore.ieee.org/document/11240973}
 }
 ```
 

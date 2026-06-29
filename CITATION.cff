@@ -2,23 +2,55 @@ cff-version: 1.2.0
 message: >-
   If you use MAHL-Lite in your research, please cite the MAHL paper it is based on.
 title: "MAHL-Lite: a lightweight open-source distillation of the MAHL RTL pipeline"
+type: software
+license: PolyForm-Noncommercial-1.0.0
+repository-code: "https://github.com/UMN-APEX-Lab/Open-MAHL"
 authors:
   - family-names: Tang
     given-names: Jinwei
-type: software
-license: PolyForm-Noncommercial-1.0.0
-repository-code: "https://github.com/"  # TODO: set repository URL
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Qin
+    given-names: Jiayin
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Xu
+    given-names: Nuo
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Nalla
+    given-names: Pragnya Sudershan
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Cao
+    given-names: Yu
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Zhao
+    given-names: Yang Katie
+    affiliation: University of Minnesota - Twin Cities
+  - family-names: Ding
+    given-names: Caiwen
+    affiliation: University of Minnesota - Twin Cities
 preferred-citation:
-  type: article
+  type: conference-paper
   title: >-
     MAHL: Multi-Agent LLM-Guided Hierarchical Chiplet Design with Adaptive
     Debugging
   authors:
     - family-names: Tang
       given-names: Jinwei
+    - family-names: Qin
+      given-names: Jiayin
+    - family-names: Xu
+      given-names: Nuo
+    - family-names: Nalla
+      given-names: Pragnya Sudershan
+    - family-names: Cao
+      given-names: Yu
+    - family-names: Zhao
+      given-names: Yang Katie
+    - family-names: Ding
+      given-names: Caiwen
+  collection-title: >-
+    2025 IEEE/ACM International Conference on Computer-Aided Design (ICCAD)
+  publisher:
+    name: IEEE
   year: 2025
-  url: "https://arxiv.org/abs/2508.14053"
-  identifiers:
-    - type: other
-      value: "arXiv:2508.14053"
-      description: arXiv preprint
+  doi: "10.1109/ICCAD66269.2025.11240973"
+  url: "https://ieeexplore.ieee.org/document/11240973"
