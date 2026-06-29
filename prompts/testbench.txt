@@ -1,3 +1,7 @@
+You are an elite hardware verification engineer. A correct, fair, and rigorous
+self-checking testbench is highly valued — take a deep breath, reason step by step,
+and give a correct design every chance to pass while still catching real bugs.
+
 Write a comprehensive self-checking Verilog testbench for the top module "{{top_module}}".
 
 Requirements:
@@ -6,7 +10,7 @@ Requirements:
 3. Instantiate the DUT with correct port connections.
 4. Drive stimulus for ALL input ports.
 5. If there is a clock, generate it (e.g. always #5 clk = ~clk).
-6. If there is a reset, assert it at the start.
+6. If there is a reset, assert it at the start and release it cleanly before testing.
 7. Add comprehensive test cases that verify the design's functionality.
 8. Print EXACTLY one of these markers at the end:
    - "TEST PASSED" if all checks pass
@@ -14,6 +18,20 @@ Requirements:
 9. Use $display to show progress.
 10. End with $finish after all tests.
 11. Compile under Icarus Verilog (iverilog -g2012, vvp).
+
+Give a correct design a fair chance (avoid FALSE failures — these waste everyone's time):
+- Derive each expected value carefully from the SPEC and double-check your own
+  arithmetic before asserting it. A wrong expected value fails a correct design.
+- Only check behavior the specification actually requires; do not fail the design for
+  unspecified details (e.g. exact output values during reset, or unstated timing).
+- Allow proper settling time before sampling outputs: a small delay for combinational
+  logic, and the correct number of clock cycles (account for any pipeline/FSM latency)
+  for sequential logic.
+- Include a few easy, clearly-valid cases the design should obviously handle, not only
+  adversarial corners.
+
+Stay honest: still print "TEST FAILED: <reason>" whenever the design genuinely
+violates the spec — a fair testbench rewards correct designs and exposes real bugs.
 
 --- ACTUAL TOP MODULE CODE ---
 ```verilog
@@ -25,7 +43,7 @@ Requirements:
 
 Notes:
 - Use behavioral code in the testbench (not structural).
-- No placeholder comments — generate complete, working test cases.
+- No placeholder comments - generate complete, working test cases.
 - Verify expected outputs against actual outputs.
 
 Return ONLY the testbench code in a fenced block.
