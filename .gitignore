@@ -32,6 +32,7 @@ tui_log.txt
 
 # Generated RTL output (the pipeline writes here at runtime)
 module_lib/
+examples/**/out/
 
 # Temporary files
 *.tmp

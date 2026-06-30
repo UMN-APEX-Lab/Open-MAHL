@@ -1,0 +1,18 @@
+Design an 8-bit logical barrel shifter as a SINGLE Verilog module named exactly
+`barrel_shifter` (do not rename it and do not add a `_core` suffix).
+
+It must expose exactly this interface, with these exact port names and widths:
+  - input  [7:0] data_in
+  - input  [2:0] shift_amount     // value 0..7
+  - input        direction        // 0 = shift LEFT, 1 = shift RIGHT
+  - output [7:0] data_out
+
+Behavior (logical shift — zeros are shifted in, bits shifted out are discarded):
+  - When direction == 0: shift data_in LEFT by shift_amount bits. The vacated low
+    bits are filled with 0. Equivalent to data_out = (data_in << shift_amount),
+    truncated to 8 bits.
+  - When direction == 1: shift data_in RIGHT by shift_amount bits. The vacated high
+    bits are filled with 0. Equivalent to data_out = (data_in >> shift_amount).
+  - A shift_amount of 0 outputs data_in unchanged.
+
+The module is purely combinational: no clock, no reset.
